@@ -1,6 +1,6 @@
 from tensorflow.keras import backend as K
 from tensorflow.keras.models import Model
-from tensorflow.keras.layers import Reshape, Flatten, Input, Dense, Conv1D, concatenate, Lambda, Layer
+from tensorflow.keras.layers import Reshape, Flatten, Input, Dense, Conv1D, concatenate, Lambda, Dropout
 from tensorflow.keras.optimizers import RMSprop, Adam
 from EllipticCurve import get_key_shape
 from nac import NAC
@@ -39,7 +39,10 @@ def process_plaintext(ainput0, ainput1, p_bits, public_bits):
     ainput = concatenate([ainput0, ainput1], axis=1)
 
     adense1 = Dense(units=(p_bits + public_bits), activation='tanh')(ainput)
-    areshape = Reshape((p_bits + public_bits, 1,))(adense1)
+
+    dropout1 = Dropout(0.5)(adense1, training=True)
+
+    areshape = Reshape((p_bits + public_bits, 1,))(dropout1)
 
     aconv1 = Conv1D(filters=2, kernel_size=4, strides=1,
                     padding=pad, activation='tanh')(areshape)

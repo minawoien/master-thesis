@@ -14,7 +14,7 @@ from data_utils import generate_static_dataset, generate_cipher_dataset
 from tensorflow.keras.callbacks import ModelCheckpoint
 
 # used to save the results to a different file
-test_type = "remove-scaling-16loss"
+test_type = "dropout-05-true-after-dense"
 optimizer = "Adam"
 activation = "tanh-hard-sigmoid-lambda"
 
@@ -22,7 +22,7 @@ evelosses = []
 boblosses = []
 abelosses = []
 
-n_epochs = 30 # number of training epochs
+n_epochs = 5 # number of training epochs
 batch_size = 512  # number of training examples utilized in one iteration
 n_batches = m_train // batch_size # iterations per epoch, training examples divided by batch size
 abecycles = 1  # number of times Alice and Bob network train per iteration
