@@ -142,9 +142,13 @@ HOout = HO_model([aliceout1, aliceout2])
 bobout = bob([HOout, binput1]) 
 eveout = eve([HOout, ainput0])
 
-# Eve and Bob output from alice to decrypt p1/p2
-bobout_alice = bob([aliceout1, binput1])
-eveout_alice = eve([aliceout1, ainput0])
+# Eve and Bob output from alice to decrypt p1
+bobout_alice1 = bob([aliceout1, binput1])
+eveout_alice1 = eve([aliceout1, ainput0])
+
+# Eve and Bob output from alice to decrypt p2
+bobout_alice2 = bob([aliceout2, binput1])
+eveout_alice2 = eve([aliceout2, ainput0])
 
 abhemodel = Model([ainput0, ainput1, ainput2, binput1],
                  bobout, name='abhemodel')
@@ -153,11 +157,14 @@ abhemodel = Model([ainput0, ainput1, ainput2, binput1],
 eveloss_ho = K.mean(K.sum(K.abs(ainput1 + ainput2 - eveout), axis=-1))
 bobloss_ho = K.mean(K.sum(K.abs(ainput1 + ainput2 - bobout), axis=-1))
 
-eveloss_alice = K.mean(K.sum(K.abs(ainput1 - eveout_alice), axis=-1))
-bobloss_alice = K.mean(K.sum(K.abs(ainput1 - bobout_alice), axis=-1))
+eveloss_alice1 = K.mean(K.sum(K.abs(ainput1 - eveout_alice1), axis=-1))
+bobloss_alice1 = K.mean(K.sum(K.abs(ainput1 - bobout_alice1), axis=-1))
 
-eveloss = (eveloss_ho + eveloss_alice)
-bobloss = (bobloss_ho + bobloss_alice)
+eveloss_alice2 = K.mean(K.sum(K.abs(ainput2 - eveout_alice2), axis=-1))
+bobloss_alice2 = K.mean(K.sum(K.abs(ainput2 - bobout_alice2), axis=-1))
+
+eveloss = (eveloss_ho + eveloss_alice1 + eveout_alice2)/3
+bobloss = (bobloss_ho + bobloss_alice1 + bobloss_alice2)/3
 
 # Build and compile the ABHE model, used for training Alice, Bob and HE networks
 abheloss = bobloss + K.square((p1_bits+p2_bits)/2 - eveloss) / ((p1_bits+p2_bits//2)**2)

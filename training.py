@@ -98,7 +98,10 @@ while epoch < n_epochs:
         m1_dec = bob.predict([m1_enc, private_arr])
         loss_m1 = np.mean(np.sum(np.abs(p1_batch - m1_dec), axis=-1))
 
-        loss = (loss_m3+loss_m1)
+        m2_dec = bob.predict([m2_enc, private_arr])
+        loss_m2 = np.mean(np.sum(np.abs(p2_batch - m2_dec), axis=-1))
+
+        loss = (loss_m3+loss_m1+loss_m2)/3
 
         boblosses0.append(loss)
         boblosses.append(loss)
