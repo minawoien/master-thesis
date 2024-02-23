@@ -98,28 +98,25 @@ bconv4 = Conv1D(filters=1, kernel_size=1, strides=1,
 # Output corresponding to shape of p1 + p2
 bflattened = Flatten()(bconv4)
 
-# class ConditionalScalingLayer(Layer):
-#     def __init__(self, **kwargs):
-#         super(ConditionalScalingLayer, self).__init__(**kwargs)
+class ConditionalScalingLayer(Layer):
+    def __init__(self, **kwargs):
+        super(ConditionalScalingLayer, self).__init__(**kwargs)
 
-#     def call(self, inputs):
-#         binput0, bflattened = inputs
+    def call(self, inputs):
+        binput0, bflattened = inputs
 
-#         # Check if the maximum value in binput0 is greater than 1
-#         condition = K.max(binput0) > 1
+        # Check if the maximum value in binput0 is greater than 1
+        condition = K.max(binput0) > 1
 
-#         # Scale bflattened by 2 if condition is True, else leave it as is
-#         bflattened_scaled = K.switch(condition, lambda: bflattened * 2, lambda: bflattened)
+        # Scale bflattened by 2 if condition is True, else leave it as is
+        bflattened_scaled = K.switch(condition, lambda: bflattened * 2, lambda: bflattened)
 
-#         return bflattened_scaled
+        return bflattened_scaled
 
-#     def compute_output_shape(self, input_shape):
-#         return input_shape[1]
+    def compute_output_shape(self, input_shape):
+        return input_shape[1]
 
-# boutput = ConditionalScalingLayer()([binput0, bflattened])
-
-# Scale the output from [0, 1] to [0, 2] by multiplying by 2
-boutput = Lambda(lambda x: x * 2)(bflattened)
+boutput = ConditionalScalingLayer()([binput0, bflattened])
 
 bob = Model(inputs=[binput0, binput1],
             outputs=boutput, name='bob')
@@ -145,27 +142,25 @@ econv4 = Conv1D(filters=1, kernel_size=1, strides=1,
 
 # Eve's attempt at guessing the plaintext, corresponding to shape of p1 + p2
 eflattened = Flatten()(econv4)
+class ConditionalScalingLayer(Layer):
+    def __init__(self, **kwargs):
+        super(ConditionalScalingLayer, self).__init__(**kwargs)
 
-eoutput = Lambda(lambda x: x * 2)(eflattened)
-# class ConditionalScalingLayer(Layer):
-#     def __init__(self, **kwargs):
-#         super(ConditionalScalingLayer, self).__init__(**kwargs)
+    def call(self, inputs):
+        einput0, eflattened = inputs
 
-#     def call(self, inputs):
-#         einput0, eflattened = inputs
+        # Check if the maximum value in binput0 is greater than 1
+        condition = K.max(einput0) > 1
 
-#         # Check if the maximum value in binput0 is greater than 1
-#         condition = K.max(einput0) > 1
+        # Scale bflattened by 2 if condition is True, else leave it as is
+        eflattened_scaled = K.switch(condition, lambda: eflattened * 2, lambda: eflattened)
 
-#         # Scale bflattened by 2 if condition is True, else leave it as is
-#         eflattened_scaled = K.switch(condition, lambda: eflattened * 2, lambda: eflattened)
+        return eflattened_scaled
 
-#         return eflattened_scaled
+    def compute_output_shape(self, input_shape):
+        return input_shape[1]
 
-#     def compute_output_shape(self, input_shape):
-#         return input_shape[1]
-
-# eoutput = ConditionalScalingLayer()([einput0, eflattened])
+eoutput = ConditionalScalingLayer()([einput0, eflattened])
 
 eve = Model([einput0, einput1], eoutput, name='eve')
 
