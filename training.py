@@ -14,7 +14,7 @@ from data_utils import generate_static_dataset, generate_cipher_dataset
 from tensorflow.keras.callbacks import ModelCheckpoint
 
 # used to save the results to a different file
-test_type = "remove-scaling-16loss"
+test_type = "train-c2-8loss"
 optimizer = "Adam"
 activation = "tanh-hard-sigmoid-lambda"
 
@@ -33,10 +33,10 @@ num_samples = c3_bits
 
 epoch = 0
 
-HO_weights_path = f'weights/{test_type}/{task_name}_weights.h5'
-alice_weights_path = f'weights/{test_type}/alice_weights.h5'
-bob_weights_path = f'weights/{test_type}/bob_weights.h5'
-eve_weights_path = f'weights/{test_type}/eve_weights.h5'
+HO_weights_path = f'weights/weights-{test_type}/{task_name}_weights.h5'
+alice_weights_path = f'weights/weights-{test_type}/alice_weights.h5'
+bob_weights_path = f'weights/weights-{test_type}/bob_weights.h5'
+eve_weights_path = f'weights/weights-{test_type}/eve_weights.h5'
 
 HO_model.trainable = True
 

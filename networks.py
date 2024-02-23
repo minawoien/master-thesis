@@ -26,7 +26,7 @@ c3_bits = (c1_bits+c2_bits)//2
 pad = 'same'
 
 # Size of the message space
-m_train = 2**((p1_bits+p2_bits)/2) # mabye add p2_bits
+m_train = 2**((p1_bits+p2_bits)//2) # mabye add p2_bits
 
 # Alice network
 # Define Alice inputs
@@ -163,7 +163,7 @@ bobloss_alice1 = K.mean(K.sum(K.abs(ainput1 - bobout_alice1), axis=-1))
 eveloss_alice2 = K.mean(K.sum(K.abs(ainput2 - eveout_alice2), axis=-1))
 bobloss_alice2 = K.mean(K.sum(K.abs(ainput2 - bobout_alice2), axis=-1))
 
-eveloss = (eveloss_ho + eveloss_alice1 + eveout_alice2)/3
+eveloss = (eveloss_ho + eveloss_alice1 + eveloss_alice2)/3
 bobloss = (bobloss_ho + bobloss_alice1 + bobloss_alice2)/3
 
 # Build and compile the ABHE model, used for training Alice, Bob and HE networks
