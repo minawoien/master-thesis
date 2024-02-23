@@ -26,7 +26,7 @@ c3_bits = (c1_bits+c2_bits)//2
 pad = 'same'
 
 # Size of the message space
-m_train = 2**((p1_bits+p2_bits)/2) # mabye add p2_bits
+m_train = 2**((p1_bits+p2_bits)//2) # mabye add p2_bits
 
 # Alice network
 # Define Alice inputs
@@ -40,15 +40,16 @@ def process_plaintext(ainput0, ainput1, p_bits, public_bits):
 
     adense1 = Dense(units=(p_bits + public_bits), activation='tanh')(ainput)
 
-    dropout1 = Dropout(0.5)(adense1, training=True)
 
-    areshape = Reshape((p_bits + public_bits, 1,))(dropout1)
+    areshape = Reshape((p_bits + public_bits, 1,))(adense1)
 
     aconv1 = Conv1D(filters=2, kernel_size=4, strides=1,
                     padding=pad, activation='tanh')(areshape)
+    
+    dropout1 = Dropout(0.5)(aconv1, training=True)
 
     aconv2 = Conv1D(filters=4, kernel_size=2, strides=2,
-                    padding=pad, activation='tanh')(aconv1)
+                    padding=pad, activation='tanh')(dropout1)
 
     aconv3 = Conv1D(filters=4, kernel_size=1, strides=1,
                     padding=pad, activation='tanh')(aconv2)
@@ -159,8 +160,8 @@ bobloss_ho = K.mean(K.sum(K.abs(ainput1 + ainput2 - bobout), axis=-1))
 eveloss_alice = K.mean(K.sum(K.abs(ainput1 - eveout_alice), axis=-1))
 bobloss_alice = K.mean(K.sum(K.abs(ainput1 - bobout_alice), axis=-1))
 
-eveloss = (eveloss_ho + eveloss_alice)
-bobloss = (bobloss_ho + bobloss_alice)
+eveloss = (eveloss_ho + eveloss_alice)/2
+bobloss = (bobloss_ho + bobloss_alice)/2
 
 # Build and compile the ABHE model, used for training Alice, Bob and HE networks
 abheloss = bobloss + K.square((p1_bits+p2_bits)/2 - eveloss) / ((p1_bits+p2_bits//2)**2)

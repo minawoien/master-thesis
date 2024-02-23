@@ -1,6 +1,6 @@
 import os
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "6"
+os.environ["CUDA_VISIBLE_DEVICES"] = "5"
 os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
 
 
@@ -14,7 +14,7 @@ from data_utils import generate_static_dataset, generate_cipher_dataset
 from tensorflow.keras.callbacks import ModelCheckpoint
 
 # used to save the results to a different file
-test_type = "dropout-05-true-after-dense"
+test_type = "dropout-05-true-after-conv1"
 optimizer = "Adam"
 activation = "tanh-hard-sigmoid-lambda"
 
@@ -22,7 +22,7 @@ evelosses = []
 boblosses = []
 abelosses = []
 
-n_epochs = 5 # number of training epochs
+n_epochs = 30 # number of training epochs
 batch_size = 512  # number of training examples utilized in one iteration
 n_batches = m_train // batch_size # iterations per epoch, training examples divided by batch size
 abecycles = 1  # number of times Alice and Bob network train per iteration
@@ -33,10 +33,10 @@ num_samples = c3_bits
 
 epoch = 0
 
-HO_weights_path = f'weights/{test_type}/{task_name}_weights.h5'
-alice_weights_path = f'weights/{test_type}/alice_weights.h5'
-bob_weights_path = f'weights/{test_type}/bob_weights.h5'
-eve_weights_path = f'weights/{test_type}/eve_weights.h5'
+HO_weights_path = f'weights/weights-{test_type}/{task_name}_weights.h5'
+alice_weights_path = f'weights/weights-{test_type}/alice_weights.h5'
+bob_weights_path = f'weights/weights-{test_type}/bob_weights.h5'
+eve_weights_path = f'weights/weights-{test_type}/eve_weights.h5'
 
 HO_model.trainable = True
 
@@ -98,7 +98,7 @@ while epoch < n_epochs:
         m1_dec = bob.predict([m1_enc, private_arr])
         loss_m1 = np.mean(np.sum(np.abs(p1_batch - m1_dec), axis=-1))
 
-        loss = (loss_m3+loss_m1)
+        loss = (loss_m3+loss_m1)/2
 
         boblosses0.append(loss)
         boblosses.append(loss)
