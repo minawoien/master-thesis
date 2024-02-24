@@ -41,16 +41,16 @@ def process_plaintext(ainput0, ainput1, p_bits, public_bits):
 
     adense1 = Dense(units=(p_bits + public_bits), activation='tanh')(ainput)
 
-    dropout1 = Dropout(0.5, seed=random.seed(10))(adense1, training=True)
-
-    areshape = Reshape((p_bits + public_bits, 1,))(dropout1)
+    areshape = Reshape((p_bits + public_bits, 1,))(adense1)
 
     aconv1 = Conv1D(filters=2, kernel_size=4, strides=1,
                     padding=pad, activation='tanh')(areshape)
     
-
+    dropout1 = Dropout(0.5, seed=random.seed(10))(aconv1, training=True)
+    
     aconv2 = Conv1D(filters=4, kernel_size=2, strides=2,
-                    padding=pad, activation='tanh')(aconv1)
+                    padding=pad, activation='tanh')(dropout1)
+    
 
     aconv3 = Conv1D(filters=4, kernel_size=1, strides=1,
                     padding=pad, activation='tanh')(aconv2)
