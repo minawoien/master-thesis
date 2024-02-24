@@ -3,7 +3,7 @@ import numpy as np
 from EllipticCurve import generate_key_pair
 
 batch_size = 512
-test_type = "weights-remove-scaling-16loss"
+test_type = "weights-dropout-05-true-random-seed-after-conv1"
 
 HO_weights_path = f'weights/{test_type}/addition_weights.h5'
 alice_weights_path = f'weights/{test_type}/alice_weights.h5'
@@ -24,7 +24,6 @@ private_arr = np.load("key/private_key.npy")
 cipher1, cipher2 = alice.predict([public_arr, p1_batch, p2_batch])
 print(f"Cipher1: {cipher1}")
 print(f"Cipher2: {cipher2}")
-
 # HO adds the messages
 cipher3 = HO_model.predict([cipher1, cipher2])
 computed_cipher = cipher1 + cipher2
