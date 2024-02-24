@@ -5,6 +5,7 @@ from tensorflow.keras.optimizers import RMSprop, Adam
 from EllipticCurve import get_key_shape
 from nac import NAC
 import tensorflow as tf
+import random
 
 learning_rate = 0.0001
 
@@ -40,7 +41,7 @@ def process_plaintext(ainput0, ainput1, p_bits, public_bits):
 
     adense1 = Dense(units=(p_bits + public_bits), activation='tanh')(ainput)
 
-    dropout1 = Dropout(0.7)(adense1, training=True)
+    dropout1 = Dropout(0.5, seed=random.seed(10))(adense1, training=True)
 
     areshape = Reshape((p_bits + public_bits, 1,))(dropout1)
 
