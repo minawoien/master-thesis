@@ -1,6 +1,6 @@
 import os
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "5"
+os.environ["CUDA_VISIBLE_DEVICES"] = "6"
 os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
 
 
@@ -14,7 +14,7 @@ from data_utils import generate_static_dataset, generate_cipher_dataset
 from tensorflow.keras.callbacks import ModelCheckpoint
 
 # used to save the results to a different file
-test_type = "dropout-05-true-time-random-seed-after-conv2"
+test_type = "dropout-05-true-random-seed-after-conv1-define-inside"
 optimizer = "Adam"
 activation = "tanh-hard-sigmoid-lambda"
 

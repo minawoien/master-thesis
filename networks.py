@@ -6,9 +6,7 @@ from EllipticCurve import get_key_shape
 from nac import NAC
 import tensorflow as tf
 import random
-import time
 
-current_time = int(time.time())
 learning_rate = 0.0001
 
 # Set up the crypto parameters: plaintext, key, and ciphertext bit lengths
@@ -48,14 +46,14 @@ def process_plaintext(ainput0, ainput1, p_bits, public_bits):
     aconv1 = Conv1D(filters=2, kernel_size=4, strides=1,
                     padding=pad, activation='tanh')(areshape)
     
+    dropout1 = Dropout(0.5, seed=random.seed(random.randint(0,1000)))(aconv1, training=True)
     
     aconv2 = Conv1D(filters=4, kernel_size=2, strides=2,
-                    padding=pad, activation='tanh')(aconv1)
+                    padding=pad, activation='tanh')(dropout1)
     
-    dropout1 = Dropout(0.5, seed=random.seed(current_time))(aconv2, training=True)
 
     aconv3 = Conv1D(filters=4, kernel_size=1, strides=1,
-                    padding=pad, activation='tanh')(dropout1)
+                    padding=pad, activation='tanh')(aconv2)
 
     aconv4 = Conv1D(filters=1, kernel_size=1, strides=1,
                     padding=pad, activation='hard_sigmoid')(aconv3)
