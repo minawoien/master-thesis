@@ -40,18 +40,15 @@ def process_plaintext(ainput0, ainput1, p_bits, public_bits):
     ainput = concatenate([ainput0, ainput1], axis=1)
 
     adense1 = Dense(units=(p_bits + public_bits), activation='tanh')(ainput)
-    
-    dropout0 = Dropout(0.8)(adense1, training=True)
 
-    areshape = Reshape((p_bits + public_bits, 1,))(dropout0)
+    areshape = Reshape((p_bits + public_bits, 1,))(ainput)
 
     aconv1 = Conv1D(filters=2, kernel_size=4, strides=1,
                     padding=pad, activation='tanh')(areshape)
     
-    dropout1 = Dropout(0.3)(aconv1, training=True)
     
     aconv2 = Conv1D(filters=4, kernel_size=2, strides=2,
-                    padding=pad, activation='tanh')(dropout1)
+                    padding=pad, activation='tanh')(aconv1)
 
     aconv3 = Conv1D(filters=4, kernel_size=1, strides=1,
                     padding=pad, activation='tanh')(aconv2)

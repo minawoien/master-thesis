@@ -14,7 +14,7 @@ from data_utils import generate_static_dataset, generate_cipher_dataset
 from tensorflow.keras.callbacks import ModelCheckpoint
 
 # used to save the results to a different file
-test_type = "dropout-dense08-conv03"
+test_type = "dropout-dense05-conv05"
 optimizer = "Adam"
 activation = "tanh-hard-sigmoid-lambda"
 
