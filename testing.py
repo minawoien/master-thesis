@@ -3,7 +3,7 @@ import numpy as np
 from EllipticCurve import generate_key_pair
 
 batch_size = 512
-test_type = "weights-dropout-05-true-after-convx4"
+test_type = "weights-dropout-dense07-conv03"
 
 HO_weights_path = f'weights/{test_type}/addition_weights.h5'
 alice_weights_path = f'weights/{test_type}/alice_weights.h5'
