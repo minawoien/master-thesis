@@ -46,19 +46,25 @@ def process_plaintext(ainput0, ainput1, p_bits, public_bits):
     aconv1 = Conv1D(filters=2, kernel_size=4, strides=1,
                     padding=pad, activation='tanh')(areshape)
     
-    dropout1 = Dropout(0.5, seed=random.seed(random.randint(0,1000)))(aconv1, training=True)
+    dropout1 = Dropout(0.5)(aconv1, training=True)
     
     aconv2 = Conv1D(filters=4, kernel_size=2, strides=2,
                     padding=pad, activation='tanh')(dropout1)
     
+    dropout2 = Dropout(0.5)(aconv2, training=True)
 
     aconv3 = Conv1D(filters=4, kernel_size=1, strides=1,
-                    padding=pad, activation='tanh')(aconv2)
+                    padding=pad, activation='tanh')(dropout2)
+    
+    dropout3 = Dropout(0.5)(aconv3, training=True)
 
     aconv4 = Conv1D(filters=1, kernel_size=1, strides=1,
-                    padding=pad, activation='hard_sigmoid')(aconv3)
+                    padding=pad, activation='hard_sigmoid')(dropout3)
+    
+    dropout4 = Dropout(0.5)(aconv4, training=True)
+    
 
-    return Flatten()(aconv4)
+    return Flatten()(dropout4)
 
 aoutput_first = process_plaintext(ainput0, ainput1, p1_bits, public_bits)
 aoutput_second = process_plaintext(ainput0, ainput2, p2_bits, public_bits)
