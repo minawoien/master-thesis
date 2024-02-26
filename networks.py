@@ -40,31 +40,26 @@ def process_plaintext(ainput0, ainput1, p_bits, public_bits):
     ainput = concatenate([ainput0, ainput1], axis=1)
 
     adense1 = Dense(units=(p_bits + public_bits), activation='tanh')(ainput)
+    
+    dropout0 = Dropout(0.8)(adense1, training=True)
 
-    areshape = Reshape((p_bits + public_bits, 1,))(adense1)
+    areshape = Reshape((p_bits + public_bits, 1,))(dropout0)
 
     aconv1 = Conv1D(filters=2, kernel_size=4, strides=1,
                     padding=pad, activation='tanh')(areshape)
     
-    dropout1 = Dropout(0.5)(aconv1, training=True)
+    dropout1 = Dropout(0.3)(aconv1, training=True)
     
     aconv2 = Conv1D(filters=4, kernel_size=2, strides=2,
                     padding=pad, activation='tanh')(dropout1)
-    
-    dropout2 = Dropout(0.5)(aconv2, training=True)
 
     aconv3 = Conv1D(filters=4, kernel_size=1, strides=1,
-                    padding=pad, activation='tanh')(dropout2)
-    
-    dropout3 = Dropout(0.5)(aconv3, training=True)
+                    padding=pad, activation='tanh')(aconv2)
 
     aconv4 = Conv1D(filters=1, kernel_size=1, strides=1,
-                    padding=pad, activation='hard_sigmoid')(dropout3)
+                    padding=pad, activation='hard_sigmoid')(aconv3)
     
-    dropout4 = Dropout(0.5)(aconv4, training=True)
-    
-
-    return Flatten()(dropout4)
+    return Flatten()(aconv4)
 
 aoutput_first = process_plaintext(ainput0, ainput1, p1_bits, public_bits)
 aoutput_second = process_plaintext(ainput0, ainput2, p2_bits, public_bits)
