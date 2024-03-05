@@ -1,0 +1,29 @@
+Training complete.
+P_bits 16
+learning rate 0.0001
+Optimizer: Adam
+Activation: tanh-hard-sigmoid-lambda
+Epochs: 20
+Batch size: 512
+Iterations per epoch: 128
+Alice-Bob cycles per iteration: 1
+Eve cycles per iteration: 1
+Total number of bits: 8192
+Number of correctly decrypted bits by Bob: 7194
+Decryption accuracy by Bob: 87.8173828125%
+Decryption accuracy by Eve: 74.169921875%
+Correct plaintext: [[1. 0. 1. 0.]
+ [1. 0. 1. 0.]
+ [1. 0. 1. 0.]
+ ...
+ [1. 0. 1. 0.]
+ [1. 0. 1. 0.]
+ [1. 0. 1. 0.]]%
+Eve's guess: [[0 0 1 0]
+ [0 0 1 0]
+ [0 0 1 0]
+ ...
+ [0 0 1 0]
+ [0 0 1 0]
+ [0 1 1 0]]%
+

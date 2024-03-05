@@ -22,7 +22,7 @@ evelosses = []
 boblosses = []
 abelosses = []
 
-n_epochs = 30 # number of training epochs
+n_epochs = 20 # number of training epochs
 batch_size = 512  # number of training examples utilized in one iteration
 n_batches = m_train // batch_size # iterations per epoch, training examples divided by batch size
 abecycles = 1  # number of times Alice and Bob network train per iteration
@@ -44,7 +44,7 @@ HO_model.trainable = True
 X1_train, X2_train, y_train = generate_static_dataset(task_fn, num_samples, batch_size)
 X1_test, X2_test, y_test = generate_static_dataset(task_fn, num_samples, batch_size)
 
-HO_model.fit([X1_train, X2_train], y_train, batch_size=128, epochs=50,
+HO_model.fit([X1_train, X2_train], y_train, batch_size=128, epochs=512,
     verbose=2, validation_data=([X1_test, X2_test], y_test))
 
 
@@ -58,7 +58,7 @@ private_arr, public_arr = generate_key_pair(batch_size)
 X1_cipher_train, X2_cipher_train, y_cipher_train = generate_cipher_dataset(p1_bits, p2_bits, batch_size, public_arr, alice, task_fn)
 X1_cipher_test, X2_cipher_test, y_cipher_test = generate_cipher_dataset(p1_bits, p2_bits, batch_size, public_arr, alice, task_fn)
 
-HO_model.fit([X1_cipher_train, X2_cipher_train], y_cipher_train, batch_size=128, epochs=50,
+HO_model.fit([X1_cipher_train, X2_cipher_train], y_cipher_train, batch_size=128, epochs=512,
     verbose=2, callbacks=callbacks, validation_data=([X1_cipher_test, X2_cipher_test], y_cipher_test))
 
 # Save weights
