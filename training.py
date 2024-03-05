@@ -8,7 +8,7 @@ import pandas as pd
 import sys
 import matplotlib.pyplot as plt
 import numpy as np
-from networks import alice, bob, eve, abhemodel, m_train, p1_bits, evemodel, p2_bits, HO_model, learning_rate, c3_bits, nonce_bits
+from networks import alice, bob, eve, abhemodel, m_train, p1_bits, evemodel, p2_bits, HO_model, learning_rate, c3_bits, nonce_bits, p3_bits, p4_bits
 from EllipticCurve import generate_key_pair
 from data_utils import generate_static_dataset, generate_cipher_dataset
 from tensorflow.keras.callbacks import ModelCheckpoint
@@ -81,10 +81,8 @@ while epoch < n_epochs:
 
             private_arr, public_arr = generate_key_pair(batch_size)
 
-            nonce = np.random.rand(batch_size, nonce_bits)
-
             loss = abhemodel.train_on_batch(
-                [public_arr, p1_batch, p2_batch, nonce, private_arr], None)  # calculate the loss
+                [public_arr, p1_batch, p2_batch, private_arr], None)  # calculate the loss
 
         # How well Alice's encryption and Bob's decryption work together
         abelosses0.append(loss)
@@ -92,12 +90,12 @@ while epoch < n_epochs:
         abeavg = np.mean(abelosses0)
 
         # Evaluate Bob's ability to decrypt a message
-        m1_enc, m2_enc = alice.predict([public_arr, p1_batch, p2_batch, nonce])
+        m1_enc, m2_enc = alice.predict([public_arr, p1_batch, p2_batch])
         m3_enc = HO_model.predict([m1_enc, m2_enc])
-        m3_dec = bob.predict([m3_enc, private_arr, nonce])
+        m3_dec = bob.predict([m3_enc, private_arr])
         loss_m3 = np.mean(np.sum(np.abs(p1_batch + p2_batch - m3_dec), axis=-1))
 
-        m1_dec = bob.predict([m1_enc, private_arr, nonce])
+        m1_dec = bob.predict([m1_enc, private_arr])
         loss_m1 = np.mean(np.sum(np.abs(p1_batch - m1_dec), axis=-1))
 
         loss = (loss_m3+loss_m1)/2
@@ -113,10 +111,13 @@ while epoch < n_epochs:
                 0, 2, p1_bits * batch_size).reshape(batch_size, p1_bits)
             p2_batch = np.random.randint(
                 0, 2, p2_bits * batch_size).reshape(batch_size, p2_bits)
+            p3_batch = np.random.randint(
+                0, 2, p2_bits * batch_size).reshape(batch_size, p3_bits)
+            p4_batch = np.random.randint(
+                0, 2, p2_bits * batch_size).reshape(batch_size, p4_bits)
             _, public_arr = generate_key_pair(batch_size)
-            nonce = np.random.rand(batch_size, nonce_bits)
 
-            loss = evemodel.train_on_batch([public_arr, p1_batch, p2_batch, nonce], None)
+            loss = evemodel.train_on_batch([public_arr, p1_batch, p2_batch, p3_batch, p4_batch], None)
         evelosses0.append(loss)
         evelosses.append(loss)
         eveavg = np.mean(evelosses0)
@@ -178,13 +179,11 @@ with open(f'results/results-{test_type}.txt', "a") as f:
         0, 2, p2_bits * batch_size).reshape(batch_size, p2_bits).astype('float32')
     private_arr, public_arr = generate_key_pair(batch_size)
 
-    nonce = np.random.rand(batch_size, nonce_bits)
-
     print(f"P1: {p1_batch}")
     print(f"P2: {p2_batch}")
 
     # Alice encrypts the message
-    cipher1, cipher2 = alice.predict([public_arr, p1_batch, p2_batch, nonce])
+    cipher1, cipher2 = alice.predict([public_arr, p1_batch, p2_batch])
     print(f"Cipher1: {cipher1}")
     print(f"Cipher2: {cipher2}")
 
@@ -193,7 +192,7 @@ with open(f'results/results-{test_type}.txt', "a") as f:
     print(f"Cipher3: {cipher3}")
 
     # Bob attempt to decrypt
-    decrypted = bob.predict([cipher3, private_arr, nonce])
+    decrypted = bob.predict([cipher3, private_arr])
     decrypted_bits = np.round(decrypted).astype(int)
 
     print(f"Bob decrypted: {decrypted}")
@@ -209,7 +208,7 @@ with open(f'results/results-{test_type}.txt', "a") as f:
     print(f"Decryption accuracy: {accuracy}%")
 
     # Eve attempt to decrypt
-    eve_decrypted = eve.predict([cipher3, public_arr, nonce])
+    eve_decrypted = eve.predict([cipher3, public_arr])
     eve_decrypted_bits = np.round(eve_decrypted).astype(int)
 
     print(f"Eve decrypted: {eve_decrypted}")
@@ -232,7 +231,7 @@ with open(f'results/results-{test_type}.txt', "a") as f:
     f.write("\n")
 
     # Bob attempt to decrypt cipher1
-    decrypted_c1 = bob.predict([cipher1, private_arr, nonce])
+    decrypted_c1 = bob.predict([cipher1, private_arr])
     decrypted_bits_c1 = np.round(decrypted_c1).astype(int)
 
     print(f"Bob decrypted P1: {decrypted_c1}")
