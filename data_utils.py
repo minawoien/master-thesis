@@ -51,11 +51,10 @@ def generate_static_dataset(op_fn, num_samples=572, batch_size=5,seed=0):
     return  np.array(X1_dataset), np.array(X2_dataset), np.array(y_dataset)
 
 
-def generate_cipher_dataset(p1_bits, p2_bits, batch_size, public_arr, alice, task_fn, nonce_bits):
-    nonce = np.random.rand(batch_size, nonce_bits)
+def generate_cipher_dataset(p1_bits, p2_bits, batch_size, public_arr, alice, task_fn):
     p1_batch = np.random.randint(0, 2, p1_bits * batch_size).reshape(batch_size, p1_bits)
     p2_batch = np.random.randint(0, 2, p2_bits * batch_size).reshape(batch_size, p2_bits)
-    cipher1, cipher2 = alice.predict([public_arr, p1_batch, p2_batch, nonce])
+    cipher1, cipher2 = alice.predict([public_arr, p1_batch, p2_batch])
 
     cipher3 = []
     assert callable(task_fn)
@@ -68,3 +67,4 @@ def generate_cipher_dataset(p1_bits, p2_bits, batch_size, public_arr, alice, tas
 
 if __name__ == "__main__":
     generate_static_dataset(lambda x, y: x + y, 2)
+

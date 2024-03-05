@@ -8,13 +8,13 @@ import pandas as pd
 import sys
 import matplotlib.pyplot as plt
 import numpy as np
-from networks import alice, bob, eve, abhemodel, m_train, p1_bits, evemodel, p2_bits, HO_model, learning_rate, c3_bits, nonce_bits, p3_bits, p4_bits
+from networks import alice, bob, eve, abhemodel, m_train, p1_bits, evemodel, p2_bits, HO_model, learning_rate, c3_bits
 from EllipticCurve import generate_key_pair
 from data_utils import generate_static_dataset, generate_cipher_dataset
 from tensorflow.keras.callbacks import ModelCheckpoint
 
 # used to save the results to a different file
-test_type = "nonce-dropout-07dense-75e"
+test_type = "test-pca"
 optimizer = "Adam"
 activation = "tanh-hard-sigmoid-lambda"
 
@@ -22,7 +22,7 @@ evelosses = []
 boblosses = []
 abelosses = []
 
-n_epochs = 75 # number of training epochs
+n_epochs = 30 # number of training epochs
 batch_size = 512  # number of training examples utilized in one iteration
 n_batches = m_train // batch_size # iterations per epoch, training examples divided by batch size
 abecycles = 1  # number of times Alice and Bob network train per iteration
@@ -41,10 +41,10 @@ eve_weights_path = f'weights/weights-{test_type}/eve_weights.h5'
 HO_model.trainable = True
 
 # Train HO model to do addition
-X1_train, X2_train, y_train = generate_static_dataset(task_fn, num_samples, batch_size, nonce_bits)
-X1_test, X2_test, y_test = generate_static_dataset(task_fn, num_samples, batch_size, nonce_bits)
+X1_train, X2_train, y_train = generate_static_dataset(task_fn, num_samples, batch_size)
+X1_test, X2_test, y_test = generate_static_dataset(task_fn, num_samples, batch_size)
 
-HO_model.fit([X1_train, X2_train], y_train, batch_size=128, epochs=512,
+HO_model.fit([X1_train, X2_train], y_train, batch_size=128, epochs=50,
     verbose=2, validation_data=([X1_test, X2_test], y_test))
 
 
@@ -55,10 +55,10 @@ callbacks = [checkpoint]
 
 private_arr, public_arr = generate_key_pair(batch_size)
 # Train HO model with Alice to do addition on encrypted data
-X1_cipher_train, X2_cipher_train, y_cipher_train = generate_cipher_dataset(p1_bits, p2_bits, batch_size, public_arr, alice, task_fn, nonce_bits)
-X1_cipher_test, X2_cipher_test, y_cipher_test = generate_cipher_dataset(p1_bits, p2_bits, batch_size, public_arr, alice, task_fn, nonce_bits)
+X1_cipher_train, X2_cipher_train, y_cipher_train = generate_cipher_dataset(p1_bits, p2_bits, batch_size, public_arr, alice, task_fn)
+X1_cipher_test, X2_cipher_test, y_cipher_test = generate_cipher_dataset(p1_bits, p2_bits, batch_size, public_arr, alice, task_fn)
 
-HO_model.fit([X1_cipher_train, X2_cipher_train], y_cipher_train, batch_size=128, epochs=512,
+HO_model.fit([X1_cipher_train, X2_cipher_train], y_cipher_train, batch_size=128, epochs=50,
     verbose=2, callbacks=callbacks, validation_data=([X1_cipher_test, X2_cipher_test], y_cipher_test))
 
 # Save weights
@@ -74,15 +74,22 @@ while epoch < n_epochs:
         alice.trainable = True
         for cycle in range(abecycles):
             # Select two random batches of plaintexts
-            p1_batch = np.random.randint(
+            p1a_batch = np.random.randint(
                 0, 2, p1_bits * batch_size).reshape(batch_size, p1_bits)
-            p2_batch = np.random.randint(
+            p1b_batch = np.random.randint(
+                0, 2, p2_bits * batch_size).reshape(batch_size, p1_bits)
+            p2a_batch = np.random.randint(
+                0, 2, p1_bits * batch_size).reshape(batch_size, p2_bits)
+            p2b_batch = np.random.randint(
                 0, 2, p2_bits * batch_size).reshape(batch_size, p2_bits)
+            
+            p1_batch = p1a_batch if np.random.rand() < 0.5 else p1b_batch
+            p2_batch = p2a_batch if np.random.rand() < 0.5 else p2b_batch
 
             private_arr, public_arr = generate_key_pair(batch_size)
 
             loss = abhemodel.train_on_batch(
-                [public_arr, p1_batch, p2_batch, private_arr], None)  # calculate the loss
+                [public_arr, p1_batch, p2_batch, private_arr, p1a_batch, p1b_batch, p2a_batch, p2b_batch], None)  # calculate the loss
 
         # How well Alice's encryption and Bob's decryption work together
         abelosses0.append(loss)
@@ -107,17 +114,19 @@ while epoch < n_epochs:
         # Train the EVE network
         alice.trainable = False
         for cycle in range(evecycles):
-            p1_batch = np.random.randint(
+            p1a_batch = np.random.randint(
                 0, 2, p1_bits * batch_size).reshape(batch_size, p1_bits)
-            p2_batch = np.random.randint(
+            p1b_batch = np.random.randint(
+                0, 2, p2_bits * batch_size).reshape(batch_size, p1_bits)
+            p2a_batch = np.random.randint(
+                0, 2, p1_bits * batch_size).reshape(batch_size, p2_bits)
+            p2b_batch = np.random.randint(
                 0, 2, p2_bits * batch_size).reshape(batch_size, p2_bits)
-            p3_batch = np.random.randint(
-                0, 2, p2_bits * batch_size).reshape(batch_size, p3_bits)
-            p4_batch = np.random.randint(
-                0, 2, p2_bits * batch_size).reshape(batch_size, p4_bits)
+            p1_batch = p1a_batch if np.random.rand() < 0.5 else p1b_batch
+            p2_batch = p2a_batch if np.random.rand() < 0.5 else p2b_batch
             _, public_arr = generate_key_pair(batch_size)
 
-            loss = evemodel.train_on_batch([public_arr, p1_batch, p2_batch, p3_batch, p4_batch], None)
+            loss = evemodel.train_on_batch([public_arr, p1_batch, p2_batch, p1a_batch, p1b_batch, p2a_batch, p2b_batch], None)
         evelosses0.append(loss)
         evelosses.append(loss)
         eveavg = np.mean(evelosses0)
@@ -173,10 +182,16 @@ with open(f'results/results-{test_type}.txt', "a") as f:
     f.write("Eve cycles per iteration: {}\n".format(evecycles))
 
     # Test the model
-    p1_batch = np.random.randint(
-        0, 2, p1_bits * batch_size).reshape(batch_size, p1_bits).astype('float32')
-    p2_batch = np.random.randint(
-        0, 2, p2_bits * batch_size).reshape(batch_size, p2_bits).astype('float32')
+    p1a_batch = np.random.randint(
+        0, 2, p1_bits * batch_size).reshape(batch_size, p1_bits)
+    p1b_batch = np.random.randint(
+        0, 2, p2_bits * batch_size).reshape(batch_size, p1_bits)
+    p2a_batch = np.random.randint(
+        0, 2, p1_bits * batch_size).reshape(batch_size, p2_bits)
+    p2b_batch = np.random.randint(
+        0, 2, p2_bits * batch_size).reshape(batch_size, p2_bits)
+    p1_batch = p1a_batch if np.random.rand() < 0.5 else p1b_batch
+    p2_batch = p2a_batch if np.random.rand() < 0.5 else p2b_batch
     private_arr, public_arr = generate_key_pair(batch_size)
 
     print(f"P1: {p1_batch}")
@@ -207,41 +222,39 @@ with open(f'results/results-{test_type}.txt', "a") as f:
     print(f"Total number of bits: {total_bits}")
     print(f"Decryption accuracy: {accuracy}%")
 
+    def compare_inputs(ainput1, ainput2, einput1a, einput1b, einput2a, einput2b):
+        # Initialize the list to hold comparison results
+        correct_input = []
+        
+        # Pairwise comparison of ainput1 with einput1a and einput1b
+        correct_input.append(int(np.array_equal(ainput1, einput1a)))
+        correct_input.append(int(np.array_equal(ainput1, einput1b)))
+        
+        # Pairwise comparison of ainput2 with einput2a and einput2b
+        correct_input.append(int(np.array_equal(ainput2, einput2a)))
+        correct_input.append(int(np.array_equal(ainput2, einput2b)))
+        
+        return correct_input
+    
+    correct_input = compare_inputs(p1_batch, p2_batch, p1a_batch, p1b_batch, p2a_batch, p2b_batch) * np.ones((batch_size, 1))
+    print(f"Correct input: {correct_input}")
+
     # Eve attempt to decrypt
-    eve_decrypted = eve.predict([cipher3, public_arr])
+    eve_decrypted = eve.predict([cipher3, public_arr, p1a_batch, p1b_batch, p2a_batch, p2b_batch])
     eve_decrypted_bits = np.round(eve_decrypted).astype(int)
 
-    print(f"Eve decrypted: {eve_decrypted}")
-    print(f"Eve decrypted bits: {eve_decrypted_bits}")
+    print(f"Eve's guess: {eve_decrypted_bits}")
     
-    # Calculate Eve's decryption accuracy
-    correct_bits_eve = np.sum(eve_decrypted_bits == (p1_batch+p2_batch))
-    total_bits = np.prod(eve_decrypted_bits.shape)
-    accuracy_eve = correct_bits_eve / total_bits * 100
+    correct_predictions = (correct_input == eve_decrypted_bits)
+    accuracy_eve = np.mean(correct_predictions.astype(float))*100
 
-    print(f"Number of correctly decrypted bits by Eve: {correct_bits_eve}")
-    print(f"Total number of bits: {total_bits}")
-    print(f"Decryption accuracy by Eve: {accuracy_eve}%")
+    print(f"Eve accurancy: {accuracy_eve}")
 
     f.write(f"Total number of bits: {total_bits}\n")
     f.write(f"Number of correctly decrypted bits by Bob: {correct_bits}\n")
     f.write(f"Decryption accuracy by Bob: {accuracy}%\n")
-    f.write(f"Number of correctly decrypted bits by Eve: {correct_bits_eve}\n")
     f.write(f"Decryption accuracy by Eve: {accuracy_eve}%\n")
+    f.write(f"Correct plaintext: {correct_input}%\n")
+    f.write(f"Eve's guess: {eve_decrypted_bits}%\n")
+
     f.write("\n")
-
-    # Bob attempt to decrypt cipher1
-    decrypted_c1 = bob.predict([cipher1, private_arr])
-    decrypted_bits_c1 = np.round(decrypted_c1).astype(int)
-
-    print(f"Bob decrypted P1: {decrypted_c1}")
-    print(f"Bob decrypted bits P1: {decrypted_bits_c1}")
-
-    # Calculate Bob's decryption accuracy
-    correct_bits_p1 = np.sum(decrypted_bits_c1 == (p1_batch))
-    total_bits_p1 = np.prod(decrypted_bits_c1.shape)
-    accuracy_p1 = correct_bits_p1 / total_bits_p1 * 100
-
-    print(f"Number of correctly decrypted bits P1: {correct_bits_p1}")
-    print(f"Total number of bits P1: {total_bits_p1}")
-    print(f"Decryption accuracy P1: {accuracy_p1}%")

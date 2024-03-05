@@ -5,6 +5,7 @@ from tensorflow.keras.optimizers import RMSprop, Adam
 from EllipticCurve import get_key_shape
 from nac import NAC
 import numpy as np
+import tensorflow as tf
 
 learning_rate = 0.0001
 
@@ -61,8 +62,8 @@ def process_plaintext(ainput0, ainput_p, p_bits, public_bits):
     return Flatten()(aconv4)
 
 
-chosen_plaintext1, aoutput_first = process_plaintext(ainput0, ainput1, p1_bits, public_bits)
-chosen_plaintext2, aoutput_second = process_plaintext(ainput0, ainput2, p2_bits, public_bits)
+aoutput_first = process_plaintext(ainput0, ainput1, p1_bits, public_bits)
+aoutput_second = process_plaintext(ainput0, ainput2, p2_bits, public_bits)
 
 alice = Model(inputs=[ainput0, ainput1, ainput2],
               outputs=[aoutput_first, aoutput_second], name='alice')
@@ -117,7 +118,7 @@ einput1b = Input(shape=(p1_bits, )) # plaintext 1b
 einput2a = Input(shape=(p2_bits, )) # plaintext 2a
 einput2b = Input(shape=(p2_bits, )) # plaintext 2b
 
-einput = concatenate([einput0, einput1], axis=1)
+einput = concatenate([einput0, einput1, einput1a, einput1b, einput2a, einput2b], axis=1)
 
 edense1 = Dense(units=((p1_bits+p2_bits)), activation='tanh')(einput)
 edense2 = Dense(units=((p1_bits+p2_bits)), activation='tanh')(edense1)
@@ -153,18 +154,34 @@ eveout = eve([HOout, ainput0, einput1a, einput1b, einput2a, einput2b])
 bobout_alice = bob([aliceout1, binput1])
 eveout_alice = eve([aliceout1, ainput0, einput1a, einput1b, einput2a, einput2b])
 
-abhemodel = Model([ainput0, ainput1, ainput2, binput1],
+abhemodel = Model([ainput0, ainput1, ainput2, binput1, einput1a, einput1b, einput2a, einput2b],
                  bobout, name='abhemodel')
 
 # Loss functions
 bobloss_ho = K.mean(K.sum(K.abs(ainput1 + ainput2 - bobout), axis=-1))
-eveloss_ho = K.mean(K.binary_crossentropy(ainput1+ainput2, eveout))
-
 bobloss_alice = K.mean(K.sum(K.abs(ainput1 - bobout_alice), axis=-1))
-eveloss_alice = K.mean(K.binary_crossentropy(ainput1, eveout_alice))
-
 bobloss = (bobloss_ho + bobloss_alice)/2
+
+
+# Calculate Bob loss
+def compare_inputs(ainput1, ainput2, einput1a, einput1b, einput2a, einput2b):
+    comp1a = tf.reduce_all(tf.equal(ainput1, einput1a), axis=1)
+    comp1b = tf.reduce_all(tf.equal(ainput1, einput1b), axis=1)
+    comp2a = tf.reduce_all(tf.equal(ainput2, einput2a), axis=1)
+    comp2b = tf.reduce_all(tf.equal(ainput2, einput2b), axis=1)
+
+    # Stack the comparison results to get a tensor of shape (batch_size, 4)
+    # where each row is a binary vector indicating the chosen plaintexts for each instance
+    chosen_plaintext = tf.stack([comp1a, comp1b, comp2a, comp2b], axis=1)
+
+    return tf.cast(chosen_plaintext, dtype=tf.float32)
+
+chosen_plaintext = compare_inputs(ainput1, ainput2, einput1a, einput1b, einput2a, einput2b)
+
+eveloss_ho = K.mean(K.binary_crossentropy(chosen_plaintext, eveout))
+eveloss_alice = K.mean(K.binary_crossentropy(chosen_plaintext, eveout_alice))
 eveloss = (eveloss_ho + eveloss_alice)/2
+eveloss = eveloss * (8 / K.log(2.0))
 
 # Build and compile the ABHE model, used for training Alice, Bob and HE networks
 abheloss = bobloss + K.square((p1_bits+p2_bits)/2 - eveloss) / ((p1_bits+p2_bits//2)**2)
@@ -179,6 +196,6 @@ abhemodel.compile(optimizer=beoptim)
 
 # Build and compile the Eve model, used for training Eve net (with Alice frozen)
 alice.trainable = False
-evemodel = Model([ainput0, einput1a, einput1b, einput2a, einput2b], eveout, name='evemodel')
+evemodel = Model([ainput0, ainput1, ainput2, einput1a, einput1b, einput2a, einput2b], eveout, name='evemodel')
 evemodel.add_loss(eveloss)
 evemodel.compile(optimizer=eveoptim)
