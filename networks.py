@@ -180,8 +180,9 @@ chosen_plaintext = compare_inputs(ainput1, ainput2, einput1a, einput1b, einput2a
 
 eveloss_ho = K.mean(K.binary_crossentropy(chosen_plaintext, eveout))
 eveloss_alice = K.mean(K.binary_crossentropy(chosen_plaintext, eveout_alice))
+eveloss_ho = eveloss_ho * (8 / K.log(2.0))
+eveloss_alice = eveloss_alice * (8 / K.log(2.0))
 eveloss = (eveloss_ho + eveloss_alice)/2
-eveloss = eveloss * (8 / K.log(2.0))
 
 # Build and compile the ABHE model, used for training Alice, Bob and HE networks
 abheloss = bobloss + K.square((p1_bits+p2_bits)/2 - eveloss) / ((p1_bits+p2_bits//2)**2)

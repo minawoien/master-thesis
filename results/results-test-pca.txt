@@ -27,3 +27,107 @@ Eve's guess: [[0 0 1 0]
  [0 0 1 0]
  [0 1 1 0]]%
 
+Training complete.
+P_bits 16
+learning rate 0.0001
+Optimizer: Adam
+Activation: tanh-hard-sigmoid-lambda
+Epochs: 2
+Batch size: 5
+Iterations per epoch: 50
+Alice-Bob cycles per iteration: 1
+Eve cycles per iteration: 1
+Total number of bits: 80
+Number of correctly decrypted bits by Bob: 42
+Decryption accuracy by Bob: 52.5%
+Decryption accuracy by Eve: 50.0%
+Correct plaintext: [[1 0 1 0]
+ [1 0 1 0]
+ [0 1 1 0]
+ [0 1 0 1]
+ [0 1 1 0]]%
+Eve's guess: [[1 1 0 0]
+ [1 1 0 0]
+ [1 1 0 0]
+ [1 1 0 0]
+ [1 1 0 0]]%
+
+Training complete.
+P_bits 16
+learning rate 0.0001
+Optimizer: Adam
+Activation: tanh-hard-sigmoid-lambda
+Epochs: 2
+Batch size: 5
+Iterations per epoch: 50
+Alice-Bob cycles per iteration: 1
+Eve cycles per iteration: 1
+Total number of bits: 80
+Number of correctly decrypted bits by Bob: 42
+Decryption accuracy by Bob: 52.5%
+Decryption accuracy by Eve: 45.0%
+Correct plaintext: [[1 0 1 0]
+ [1 0 1 0]
+ [0 1 1 0]
+ [0 1 0 1]
+ [0 1 1 0]]%
+Eve's guess: [[1 0 1 1]
+ [1 0 1 1]
+ [1 0 1 1]
+ [1 0 1 1]
+ [1 0 1 1]]%
+
+Training complete.
+P_bits 16
+learning rate 0.0001
+Optimizer: Adam
+Activation: tanh-hard-sigmoid-lambda
+Epochs: 2
+Batch size: 5
+Iterations per epoch: 50
+Alice-Bob cycles per iteration: 1
+Eve cycles per iteration: 1
+Total number of bits: 80
+Number of correctly decrypted bits by Bob: 42
+Decryption accuracy by Bob: 52.5%
+Decryption accuracy by Eve: 50.0%
+Correct plaintext: [[1 0 1 0]
+ [1 0 1 0]
+ [0 1 1 0]
+ [0 1 0 1]
+ [0 1 1 0]]%
+Eve's guess: [[0 1 0 0]
+ [0 1 0 0]
+ [0 1 0 0]
+ [0 1 0 0]
+ [0 1 0 1]]%
+
+Training complete.
+P_bits 16
+learning rate 0.0001
+Optimizer: Adam
+Activation: tanh-hard-sigmoid-lambda
+Epochs: 20
+Batch size: 512
+Iterations per epoch: 128
+Alice-Bob cycles per iteration: 1
+Eve cycles per iteration: 1
+Total number of bits: 8192
+Number of correctly decrypted bits by Bob: 8191
+Decryption accuracy by Bob: 99.98779296875%
+Decryption accuracy by Eve: 48.681640625%
+Correct plaintext: [[0 1 0 1]
+ [1 0 0 1]
+ [1 0 0 1]
+ ...
+ [0 1 0 1]
+ [1 0 1 0]
+ [0 1 0 1]]%
+Eve's guess: [[0 0 0 1]
+ [0 0 0 1]
+ [0 0 0 1]
+ ...
+ [0 0 0 1]
+ [0 0 0 1]
+ [0 0 0 1]]%
+
